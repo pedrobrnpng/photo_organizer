@@ -1,6 +1,8 @@
 from pathlib import Path 
 import os
 import shutil
+import time
+from progress.bar import IncrementalBar
 
 currentpath = os.getcwd()
 
@@ -13,7 +15,7 @@ if not os.path.isdir(Path(destination,"erros")):
 	os.mkdir(Path(destination,"erros"))
 
 itemlist = os.listdir(currentpath)
-total = len(itemlist)
+bar = IncrementalBar('Countdown', max = len(itemlist))
 analisados = 0
 
 for item in itemlist:
@@ -94,7 +96,7 @@ for item in itemlist:
 				destination2 = Path(currentpath,"final\\erros")
 				destination2 = Path(destination2,ficheiro)
 				shutil.copyfile(original, destination2)
+	
+	bar.next()
 
-	analisados+=1
-
-	print(round((analisados*100/total),0),"%")	
+bar.finish()
