@@ -5,86 +5,99 @@ from pathlib import Path
 import os 
 import shutil
 
-path = r'C:\Users\pedro\Downloads\takeout-20200915T201023Z-001\Takeout\Google Photos'
-direc = os.listdir(path)
+currentpath = os.getcwd()
 
+final = Path(currentpath,"final")
 
-for dires in direc:
+if not os.path.isdir(final):
+	os.mkdir(final)
+
+if not os.path.isdir(Path(final,"erros")):
+	os.mkdir(Path(final,"erros"))
+
+itemlist = os.listdir(currentpath)
+
+for item in itemlist:
 	
-	path = r'C:\Users\pedro\Downloads\takeout-20200915T201023Z-001\Takeout\Google Photos'
+	existeano = False
+	existemes = False
+	existedia = False
 
-	if os.path.isdir(os.path.join(path,dires)):
-		
-		path = Path(path,os.path.join(path,dires))
-		fotos = os.listdir(path)
+	final = Path(currentpath,"final")
+	finallist = os.listdir(final)
 
-		for file in fotos:
+	if(item == "final"):
+		continue 
 
-			x = 1
-			flag1 = False
-			flag2 = False
+	if os.path.isdir(currentpath):
+		listadir = os.listdir(final)
 
-			final = r'C:\Users\Pedro\Downloads\Final'
-			listadir = os.listdir(final)
+		tmpfile = item[-5:]
+		tmp = tmpfile.split(".")
 
-			tmp = file[5:].split(".")
-			print(tmp)
+		if ("jpg" ==  tmp[1].lower()):
+
+			img = Image.open(Path(currentpath,item))
+			info = img.getexif()
 			
-			if "jpg" ==  tmp[1]:
-
-				img = Image.open(Path(path,file))
-
-				info=img.getexif()
+			for tag,value in info.items(): 
+        
+				key = TAGS.get(tag,tag)
 				
-				for tag,value in info.items(): 
+				if(key=="DateTime"):
+					data = value[:10].split(":",3)
 
-					key = TAGS.get(tag,tag)
+					for pasta in listadir:
+						if os.path.isdir(os.path.join(final,pasta)):
+							if pasta == data[0]:
+								existeano = True
+								break
+					
+					final = Path(final,data[0])
+					
+					if not existeano:
+						os.mkdir(final)
 
-					if(key=="DateTime"):
-						data = value[:10].split(":",3)
-						print(data)
+					listadir = os.listdir(final)	
+					
+					for pasta in listadir:
+						if os.path.isdir(os.path.join(final,pasta)):
+							if pasta == data[1]:
+								existemes = True
+								break
 
-						for pasta in listadir:
-							if os.path.isdir(os.path.join(final,pasta)):
-								if pasta == data[0]:
-									flag1 = True
-									break
-						
-						final = Path(final,data[0])
-						
+					final = Path(final,data[1])
+					
+					if not existemes:
+						os.mkdir(final)
 
-						if not flag1:
-							os.mkdir(final)
+					listadir = os.listdir(final)	
 
-						listadir = os.listdir(final)	
-						
-						for pasta in listadir:
-							if os.path.isdir(os.path.join(final,pasta)):
-								if pasta == data[1]:
-									flag2 = True
-									break
+					for pasta in listadir:
+						if os.path.isdir(os.path.join(final,pasta)):
+							if pasta == data[2]:
+								existedia = True
+								break
 
-						final = Path(final,data[1])
-						
+					final = Path(final,data[2])
+					
+					if not existedia:
+						os.mkdir(final)	
 
-						if not flag2:
-							os.mkdir(final)
+					original = Path(currentpath,item)
+					target = Path(final,item)
+					shutil.copy(original, target)
 
-					if not (key=="DateTime"):		
-						original = Path(path,file)
-						target = Path(final,"sem data")
-						shutil.copy(original, target)
-						continue
+				else:
+					continue
 
-					else:
-						continue
+			original = Path(currentpath,item)
+			target = Path(final,item)
+			shutil.copy(original, target)	
 
-				original = Path(path,file)
-				target = Path(final,file)
-				print(target)
-				shutil.copy(original, target)				
-
-			else:
-				original = Path(path,file)
-				target = Path(final,"tipos")
-				shutil.copy(original, target)
+		else:
+			original = Path(currentpath,item)
+			target = Path(final,"erros")
+			shutil.copy(original, target)	
+	else: 
+		continue
